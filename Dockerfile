@@ -13,11 +13,11 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21
 WORKDIR /app
 
-# Copy the compiled executable JAR from the build stage
-COPY --from=build /app/target/*.jar app.jar
+# Copy the compiled executable WAR from the build stage
+COPY --from=build /app/target/*.war app.war
 
 # Expose the port for web traffic
 EXPOSE 8080
 
 # Run the Spring Boot application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.war"]
