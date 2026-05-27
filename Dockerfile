@@ -1,13 +1,22 @@
-# Use Eclipse Temurin JDK 21 base image
-FROM eclipse-temurin:21
-
-# Set the working directory inside the container
+# Stage 1: Build the application using Maven & JDK 21
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copy the compiled JAR file from target directory into the container
-COPY target/*.jar app.jar
+# Copy the build configuration and source code
+COPY pom.xml .
+COPY src ./src
 
-# Expose port 8080 for web traffic
+# Compile and package the application inside the container (skipping tests for speed)
+RUN mvn clean package -DskipTests
+
+# Stage 2: Create the runtime JRE image
+FROM eclipse-temurin:21
+WORKDIR /app
+
+# Copy the compiled executable JAR from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose the port for web traffic
 EXPOSE 8080
 
 # Run the Spring Boot application
