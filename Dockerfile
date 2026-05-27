@@ -19,5 +19,5 @@ COPY --from=build /app/target/*.war app.war
 # Expose the port for web traffic
 EXPOSE 8080
 
-# Run the Spring Boot application
-ENTRYPOINT ["java", "-jar", "app.war"]
+# Run the Spring Boot application using non-blocking urandom to prevent container startup freezes
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.war"]
