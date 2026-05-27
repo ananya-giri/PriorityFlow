@@ -1,5 +1,5 @@
-# Use a modern OpenJDK image to match and support your local Java 26 runtime
-FROM openjdk:latest
+# Use Eclipse Temurin JDK 21 base image
+FROM eclipse-temurin:21
 
 # Set the working directory inside the container
 WORKDIR /app
