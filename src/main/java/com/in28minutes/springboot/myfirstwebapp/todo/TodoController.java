@@ -17,17 +17,17 @@ import jakarta.validation.Valid;
 @Controller
 public class TodoController {
 
-	private TodoService todoservice;
+	private TodoRepository todoRepository;
 
-	public TodoController(TodoService todoservice) {
+	public TodoController(TodoRepository todoRepository) {
 		super();
-		this.todoservice = todoservice;
+		this.todoRepository = todoRepository;
 	}
 
 	@RequestMapping("list-todos")
 	public String listAllTodos(ModelMap model) {
 		String username = getLoggedInUsername();
-		List<Todo> todos = todoservice.findByUsername(username);
+		List<Todo> todos = todoRepository.findByUsername(username);
 		model.addAttribute("todos", todos);
 		model.addAttribute("name", username);
 		return "listTodos";
@@ -49,19 +49,20 @@ public class TodoController {
 			return "todo";
 		}
 		String username = getLoggedInUsername();
-		todoservice.addTodo(username, todo.getDescription(), todo.getTargetDate(), todo.isDone());
+		todo.setUsername(username);
+		todoRepository.save(todo);
 		return "redirect:list-todos";
 	}
 
 	@RequestMapping("delete-todo")
 	public String deleteTodo(@RequestParam int id) {
-		todoservice.deleteById(id);
+		todoRepository.deleteById(id);
 		return "redirect:list-todos";
 	}
 
 	@RequestMapping(value = "update-todo", method = RequestMethod.GET)
 	public String showUpdateTodoPage(@RequestParam int id, ModelMap model) {
-		Todo todo = todoservice.findById(id);
+		Todo todo = todoRepository.findById(id).orElse(null);
 		model.addAttribute("todo", todo);
 		model.addAttribute("name", getLoggedInUsername());
 		return "todo";
@@ -75,7 +76,7 @@ public class TodoController {
 		}
 		String username = getLoggedInUsername();
 		todo.setUsername(username);
-		todoservice.updateTodo(todo);
+		todoRepository.save(todo);
 		return "redirect:list-todos";
 	}
 

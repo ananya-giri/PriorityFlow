@@ -42,7 +42,7 @@ public class SpringSecurityConfiguration {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(auth -> auth
 				.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-				.requestMatchers("/login", "/webjars/**", "/css/**", "/js/**").permitAll()
+				.requestMatchers("/login", "/h2-console/**", "/webjars/**", "/css/**", "/js/**").permitAll()
 				.anyRequest().authenticated()
 			)
 			.formLogin(form -> form
