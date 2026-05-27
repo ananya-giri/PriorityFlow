@@ -3,8 +3,7 @@ package com.in28minutes.springboot.myfirstwebapp.todo;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
@@ -25,63 +24,77 @@ public class TodoController {
 	}
 
 	@RequestMapping("list-todos")
-	public String listAllTodos(ModelMap model) {
-		String username = getLoggedInUsername();
+	public String listAllTodos(HttpSession session, ModelMap model) {
+		String username = getLoggedInUsername(session);
+		if (username == null) {
+			return "redirect:login";
+		}
 		List<Todo> todos = todoRepository.findByUsername(username);
 		model.addAttribute("todos", todos);
-		model.addAttribute("name", username);
 		return "listTodos";
 	}
 
 	@RequestMapping(value = "add-todo", method = RequestMethod.GET)
-	public String showNewTodoPage(ModelMap model) {
-		String username = getLoggedInUsername();
+	public String showNewTodoPage(HttpSession session, ModelMap model) {
+		String username = getLoggedInUsername(session);
+		if (username == null) {
+			return "redirect:login";
+		}
 		Todo todo = new Todo(0, username, "", LocalDate.now().plusYears(1), false);
 		model.addAttribute("todo", todo);
-		model.addAttribute("name", username);
 		return "todo";
 	}
 
 	@RequestMapping(value = "add-todo", method = RequestMethod.POST)
-	public String addNewTodo(ModelMap model, @Valid Todo todo, BindingResult result) {
+	public String addNewTodo(HttpSession session, ModelMap model, @Valid Todo todo, BindingResult result) {
+		String username = getLoggedInUsername(session);
+		if (username == null) {
+			return "redirect:login";
+		}
 		if (result.hasErrors()) {
-			model.addAttribute("name", getLoggedInUsername());
 			return "todo";
 		}
-		String username = getLoggedInUsername();
 		todo.setUsername(username);
 		todoRepository.save(todo);
 		return "redirect:list-todos";
 	}
 
 	@RequestMapping("delete-todo")
-	public String deleteTodo(@RequestParam int id) {
+	public String deleteTodo(HttpSession session, @RequestParam int id) {
+		String username = getLoggedInUsername(session);
+		if (username == null) {
+			return "redirect:login";
+		}
 		todoRepository.deleteById(id);
 		return "redirect:list-todos";
 	}
 
 	@RequestMapping(value = "update-todo", method = RequestMethod.GET)
-	public String showUpdateTodoPage(@RequestParam int id, ModelMap model) {
+	public String showUpdateTodoPage(HttpSession session, @RequestParam int id, ModelMap model) {
+		String username = getLoggedInUsername(session);
+		if (username == null) {
+			return "redirect:login";
+		}
 		Todo todo = todoRepository.findById(id).orElse(null);
 		model.addAttribute("todo", todo);
-		model.addAttribute("name", getLoggedInUsername());
 		return "todo";
 	}
 
 	@RequestMapping(value = "update-todo", method = RequestMethod.POST)
-	public String updateTodo(ModelMap model, @Valid Todo todo, BindingResult result) {
+	public String updateTodo(HttpSession session, ModelMap model, @Valid Todo todo, BindingResult result) {
+		String username = getLoggedInUsername(session);
+		if (username == null) {
+			return "redirect:login";
+		}
 		if (result.hasErrors()) {
-			model.addAttribute("name", getLoggedInUsername());
 			return "todo";
 		}
-		String username = getLoggedInUsername();
 		todo.setUsername(username);
 		todoRepository.save(todo);
 		return "redirect:list-todos";
 	}
 
-	private String getLoggedInUsername() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		return authentication.getName();
+	private String getLoggedInUsername(HttpSession session) {
+		return (String) session.getAttribute("name");
 	}
 }
